@@ -579,7 +579,7 @@ void evaluate_packet_handlers()
 #if defined (WITH_GEOIPV2)
     pm_geoipv2_init();
 
-    if (channels_list[index].aggregation_2 & (COUNT_SRC_HOST_COUNTRY|COUNT_SRC_HOST_POCODE|COUNT_SRC_HOST_LAT|COUNT_SRC_HOST_LON) /* other GeoIP primitives here */) {
+    if (channels_list[index].aggregation_2 & (COUNT_SRC_HOST_COUNTRY|COUNT_SRC_HOST_POCODE|COUNT_SRC_HOST_COORDS) /* other GeoIP primitives here */) {
       channels_list[index].phandler[primitives] = src_host_geoipv2_lookup_handler;
       primitives++;
 
@@ -593,18 +593,13 @@ void evaluate_packet_handlers()
         primitives++;
       }
 
-      if (channels_list[index].aggregation_2 & COUNT_SRC_HOST_LAT) {
-        channels_list[index].phandler[primitives] = src_host_lat_geoipv2_handler;
+      if (channels_list[index].aggregation_2 & COUNT_SRC_HOST_COORDS) {
+        channels_list[index].phandler[primitives] = src_host_coords_geoipv2_handler;
         primitives++;
-      }
-
-      if (channels_list[index].aggregation_2 & COUNT_SRC_HOST_LON) {
-        channels_list[index].phandler[primitives] = src_host_lon_geoipv2_handler;
-        primitives++;
-      }
+      } 
     }
 
-    if (channels_list[index].aggregation_2 & (COUNT_DST_HOST_COUNTRY|COUNT_DST_HOST_POCODE|COUNT_SRC_HOST_LAT|COUNT_SRC_HOST_LON) /* other GeoIP primitives here */) {
+    if (channels_list[index].aggregation_2 & (COUNT_DST_HOST_COUNTRY|COUNT_DST_HOST_POCODE|COUNT_DST_HOST_COORDS) /* other GeoIP primitives here */) {
       channels_list[index].phandler[primitives] = dst_host_geoipv2_lookup_handler;
       primitives++;
 
@@ -618,13 +613,8 @@ void evaluate_packet_handlers()
         primitives++;
       }
 
-      if (channels_list[index].aggregation_2 & COUNT_DST_HOST_LAT) {
-        channels_list[index].phandler[primitives] = dst_host_lat_geoipv2_handler;
-        primitives++;
-      }
-
-      if (channels_list[index].aggregation_2 & COUNT_DST_HOST_LON) {
-        channels_list[index].phandler[primitives] = dst_host_lon_geoipv2_handler;
+      if (channels_list[index].aggregation_2 & COUNT_DST_HOST_COORDS) {
+        channels_list[index].phandler[primitives] = dst_host_coords_geoipv2_handler;
         primitives++;
       }
     }
@@ -5330,7 +5320,7 @@ void src_host_lat_geoipv2_handler(struct channels_list_entry *chptr, struct pack
   }
 }
 
-void dst_host_lat_geoipv2_handler(struct channels_list_entry *chptr, struct packet_ptrs *pptrs, char **data)
+void dst_host_coords_geoipv2_handler(struct channels_list_entry *chptr, struct packet_ptrs *pptrs, char **data)
 {
   struct pkt_data *pdata = (struct pkt_data *) *data;
   MMDB_entry_data_list_s *entry_data_list = NULL;
@@ -5347,7 +5337,7 @@ void dst_host_lat_geoipv2_handler(struct channels_list_entry *chptr, struct pack
     }
 
     if (status != MMDB_SUCCESS && status != MMDB_LOOKUP_PATH_DOES_NOT_MATCH_DATA_ERROR) {
-      Log(LOG_WARNING, "WARN ( %s/%s ): dst_host_lat_geoipv2_handler(): %s\n", config.name, config.type, MMDB_strerror(status));
+      Log(LOG_WARNING, "WARN ( %s/%s ): dst_host_coords_geoipv2_handler(): %s\n", config.name, config.type, MMDB_strerror(status));
     }
 
     if (entry_data_list != NULL) {
@@ -5359,17 +5349,6 @@ void dst_host_lat_geoipv2_handler(struct channels_list_entry *chptr, struct pack
 
       MMDB_free_entry_data_list(entry_data_list);
     }
-  }
-}
-
-void src_host_lon_geoipv2_handler(struct channels_list_entry *chptr, struct packet_ptrs *pptrs, char **data)
-{
-  struct pkt_data *pdata = (struct pkt_data *) *data;
-  MMDB_entry_data_list_s *entry_data_list = NULL;
-  int status;
-
-  if (pptrs->geoipv2_src.found_entry) {
-    MMDB_entry_data_s entry_data;
 
     status = MMDB_get_value(&pptrs->geoipv2_src.entry, &entry_data, "location", "longitude", NULL);
 
@@ -5379,13 +5358,13 @@ void src_host_lon_geoipv2_handler(struct channels_list_entry *chptr, struct pack
     }
 
     if (status != MMDB_SUCCESS && status != MMDB_LOOKUP_PATH_DOES_NOT_MATCH_DATA_ERROR) {
-      Log(LOG_WARNING, "WARN ( %s/%s ): src_host_lon_geoipv2_handler(): %s\n", config.name, config.type, MMDB_strerror(status));
+      Log(LOG_WARNING, "WARN ( %s/%s ): dst_host_coords_geoipv2_handler(): %s\n", config.name, config.type, MMDB_strerror(status));
     }
 
     if (entry_data_list != NULL) {
       if (entry_data_list->entry_data.has_data) {
         if (entry_data_list->entry_data.type == MMDB_DATA_TYPE_DOUBLE) {
-          pdata->primitives.src_ip_lon = entry_data_list->entry_data.double_value;
+          pdata->primitives.dst_ip_lon = entry_data_list->entry_data.double_value;
         }
       }
 
@@ -5394,7 +5373,7 @@ void src_host_lon_geoipv2_handler(struct channels_list_entry *chptr, struct pack
   }
 }
 
-void dst_host_lon_geoipv2_handler(struct channels_list_entry *chptr, struct packet_ptrs *pptrs, char **data)
+void dst_host_coords_geoipv2_handler(struct channels_list_entry *chptr, struct packet_ptrs *pptrs, char **data)
 {
   struct pkt_data *pdata = (struct pkt_data *) *data;
   MMDB_entry_data_list_s *entry_data_list = NULL;
@@ -5402,6 +5381,27 @@ void dst_host_lon_geoipv2_handler(struct channels_list_entry *chptr, struct pack
 
   if (pptrs->geoipv2_src.found_entry) {
     MMDB_entry_data_s entry_data;
+
+    status = MMDB_get_value(&pptrs->geoipv2_src.entry, &entry_data, "location", "latitude", NULL);
+
+    if (entry_data.offset) {
+      MMDB_entry_s entry = { .mmdb = &config.geoipv2_db, .offset = entry_data.offset };
+      status = MMDB_get_entry_data_list(&entry, &entry_data_list);
+    }
+
+    if (status != MMDB_SUCCESS && status != MMDB_LOOKUP_PATH_DOES_NOT_MATCH_DATA_ERROR) {
+      Log(LOG_WARNING, "WARN ( %s/%s ): dst_host_coords_geoipv2_handler(): %s\n", config.name, config.type, MMDB_strerror(status));
+    }
+
+    if (entry_data_list != NULL) {
+      if (entry_data_list->entry_data.has_data) {
+        if (entry_data_list->entry_data.type == MMDB_DATA_TYPE_DOUBLE) {
+          pdata->primitives.dst_ip_lat = entry_data_list->entry_data.double_value;
+        }
+      }
+
+      MMDB_free_entry_data_list(entry_data_list);
+    }
 
     status = MMDB_get_value(&pptrs->geoipv2_src.entry, &entry_data, "location", "longitude", NULL);
 
@@ -5411,7 +5411,7 @@ void dst_host_lon_geoipv2_handler(struct channels_list_entry *chptr, struct pack
     }
 
     if (status != MMDB_SUCCESS && status != MMDB_LOOKUP_PATH_DOES_NOT_MATCH_DATA_ERROR) {
-      Log(LOG_WARNING, "WARN ( %s/%s ): dst_host_lon_geoipv2_handler(): %s\n", config.name, config.type, MMDB_strerror(status));
+      Log(LOG_WARNING, "WARN ( %s/%s ): dst_host_coords_geoipv2_handler(): %s\n", config.name, config.type, MMDB_strerror(status));
     }
 
     if (entry_data_list != NULL) {

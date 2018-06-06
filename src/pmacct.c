@@ -340,10 +340,8 @@ void write_stats_header_formatted(pm_cfgreg_t what_to_count, pm_cfgreg_t what_to
 #if defined (WITH_GEOIPV2)
     if (what_to_count_2 & COUNT_SRC_HOST_POCODE) printf("SH_POCODE     ");
     if (what_to_count_2 & COUNT_DST_HOST_POCODE) printf("DH_POCODE     ");
-    if (what_to_count_2 & COUNT_SRC_HOST_LAT) printf("SH_LAT        ");
-    if (what_to_count_2 & COUNT_DST_HOST_LAT) printf("DH_LAT        ");
-    if (what_to_count_2 & COUNT_SRC_HOST_LON) printf("SH_LON        ");
-    if (what_to_count_2 & COUNT_DST_HOST_LON) printf("DH_LON        "); 
+    if (what_to_count_2 & COUNT_SRC_HOST_COORDS) printf("SH_COORDS     ");
+    if (what_to_count_2 & COUNT_DST_HOST_COORDS) printf("DH_COORDS     "); 
 #endif
     if (what_to_count_2 & COUNT_SAMPLING_RATE) printf("SAMPLING_RATE ");
 
@@ -582,10 +580,8 @@ void write_stats_header_csv(pm_cfgreg_t what_to_count, pm_cfgreg_t what_to_count
 #if defined (WITH_GEOIPV2)
     if (what_to_count_2 & COUNT_SRC_HOST_POCODE) printf("%sSH_POCODE", write_sep(sep, &count));
     if (what_to_count_2 & COUNT_DST_HOST_POCODE) printf("%sDH_POCODE", write_sep(sep, &count));
-    if (what_to_count_2 & COUNT_SRC_HOST_LAT) printf("%sSH_LAT", write_sep(sep, &count));
-    if (what_to_count_2 & COUNT_DST_HOST_LAT) printf("%sDH_LAT", write_sep(sep, &count));
-    if (what_to_count_2 & COUNT_SRC_HOST_LAT) printf("%sSH_LON", write_sep(sep, &count));
-    if (what_to_count_2 & COUNT_DST_HOST_LAT) printf("%sDH_LON", write_sep(sep, &count));
+    if (what_to_count_2 & COUNT_SRC_HOST_COORDS) printf("%sSH_COORDS", write_sep(sep, &count));
+    if (what_to_count_2 & COUNT_DST_HOST_COORDS) printf("%sDH_COORDS", write_sep(sep, &count));
 #endif
     if (what_to_count_2 & COUNT_SAMPLING_RATE) printf("%sSAMPLING_RATE", write_sep(sep, &count));
 
@@ -886,20 +882,20 @@ int main(int argc,char **argv)
           what_to_count_2 |= COUNT_DST_HOST_POCODE;
         }
         else if (!strcmp(count_token[count_index], "src_host_lat")) {
-          count_token_int[count_index] = COUNT_INT_SRC_HOST_LAT;
-          what_to_count_2 |= COUNT_SRC_HOST_LAT;
+          count_token_int[count_index] = COUNT_INT_SRC_HOST_COORDS;
+          what_to_count_2 |= COUNT_SRC_HOST_COORDS;
         }
         else if (!strcmp(count_token[count_index], "dst_host_lat")) {
-          count_token_int[count_index] = COUNT_INT_DST_HOST_LAT;
-          what_to_count_2 |= COUNT_DST_HOST_LAT;
+          count_token_int[count_index] = COUNT_INT_DST_HOST_COORDS;
+          what_to_count_2 |= COUNT_DST_HOST_COORDS;
         }
         else if (!strcmp(count_token[count_index], "src_host_lon")) {
-          count_token_int[count_index] = COUNT_INT_SRC_HOST_LON;
-          what_to_count_2 |= COUNT_SRC_HOST_LON;
+          count_token_int[count_index] = COUNT_INT_SRC_HOST_COORDS;
+          what_to_count_2 |= COUNT_SRC_HOST_COORDS;
         }
         else if (!strcmp(count_token[count_index], "dst_host_lon")) {
-          count_token_int[count_index] = COUNT_INT_DST_HOST_LON;
-          what_to_count_2 |= COUNT_DST_HOST_LON;
+          count_token_int[count_index] = COUNT_INT_DST_HOST_COORDS;
+          what_to_count_2 |= COUNT_DST_HOST_COORDS;
         }
 #endif
         else if (!strcmp(count_token[count_index], "sampling_rate")) {
@@ -2582,24 +2578,26 @@ int main(int argc,char **argv)
           else if (want_output & PRINT_OUTPUT_CSV) printf("%s%s", write_sep(sep_ptr, &count), acc_elem->primitives.dst_ip_pocode.str);
         }
 
-        if (!have_wtc || (what_to_count_2 & COUNT_SRC_HOST_LAT)) {
-          if (want_output & PRINT_OUTPUT_FORMATTED) printf("%-12f  ", acc_elem->primitives.src_ip_lat);
-          else if (want_output & PRINT_OUTPUT_CSV) printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.src_ip_lat);
+        if (!have_wtc || (what_to_count_2 & COUNT_SRC_HOST_COORDS)) {
+          if (want_output & PRINT_OUTPUT_FORMATTED) {
+            printf("%-12f  ", acc_elem->primitives.src_ip_lat);
+            printf("%-12f  ", acc_elem->primitives.src_ip_lon);
+          }
+          else if (want_output & PRINT_OUTPUT_CSV) {
+            printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.src_ip_lat);
+            printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.src_ip_lon);
+          }
         }
 
-        if (!have_wtc || (what_to_count_2 & COUNT_DST_HOST_LAT)) {
-          if (want_output & PRINT_OUTPUT_FORMATTED) printf("%-12f  ", acc_elem->primitives.dst_ip_lat);
-          else if (want_output & PRINT_OUTPUT_CSV) printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.dst_ip_lat);
-        }
-
-        if (!have_wtc || (what_to_count_2 & COUNT_SRC_HOST_LON)) {
-          if (want_output & PRINT_OUTPUT_FORMATTED) printf("%-12f  ", acc_elem->primitives.src_ip_lon);
-          else if (want_output & PRINT_OUTPUT_CSV) printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.src_ip_lon);
-        }
-
-        if (!have_wtc || (what_to_count_2 & COUNT_DST_HOST_LON)) {
-          if (want_output & PRINT_OUTPUT_FORMATTED) printf("%-12f  ", acc_elem->primitives.dst_ip_lon);
-          else if (want_output & PRINT_OUTPUT_CSV) printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.dst_ip_lon);
+        if (!have_wtc || (what_to_count_2 & COUNT_DST_HOST_COORDS)) {
+          if (want_output & PRINT_OUTPUT_FORMATTED) {
+            printf("%-12f  ", acc_elem->primitives.dst_ip_lat);
+            printf("%-12f  ", acc_elem->primitives.dst_ip_lon);
+          }
+          else if (want_output & PRINT_OUTPUT_CSV) {
+            printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.dst_ip_lat);
+            printf("%s%f", write_sep(sep_ptr, &count), acc_elem->primitives.dst_ip_lon);
+          }
         }
 #endif
 
@@ -3567,20 +3565,13 @@ char *pmc_compose_json(u_int64_t wtc, u_int64_t wtc_2, u_int8_t flow_type, struc
       json_object_set_new_nocheck(obj, "pocode_ip_dst", json_string(empty_string));
   }
 
-  if (wtc_2 & COUNT_SRC_HOST_LAT) {
+  if (wtc_2 & COUNT_SRC_HOST_COORDS) {
     json_object_set_new_nocheck(obj, "lat_ip_src", json_real(pbase->src_ip_lat));
-  }
-
-  if (wtc_2 & COUNT_DST_HOST_LAT) {
-    json_object_set_new_nocheck(obj, "lat_ip_dst", json_real(pbase->dst_ip_lat));
-
-  }
-
-  if (wtc_2 & COUNT_SRC_HOST_LON) {
     json_object_set_new_nocheck(obj, "lat_ip_src", json_real(pbase->src_ip_lon));
   }
 
-  if (wtc_2 & COUNT_DST_HOST_LON) {
+  if (wtc_2 & COUNT_DST_HOST_COORDS) {
+    json_object_set_new_nocheck(obj, "lat_ip_dst", json_real(pbase->dst_ip_lat));
     json_object_set_new_nocheck(obj, "lat_ip_dst", json_real(pbase->dst_ip_lon));
   }
 #endif
