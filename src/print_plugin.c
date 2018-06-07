@@ -1385,7 +1385,6 @@ void P_write_stats_header_formatted(FILE *f, int is_event)
   if (config.what_to_count_2 & COUNT_DST_HOST_POCODE) fprintf(f, "DH_POCODE     ");
   if (config.what_to_count_2 & COUNT_SRC_HOST_COORDS) fprintf(f, "SH_COORDS     ");
   if (config.what_to_count_2 & COUNT_DST_HOST_COORDS) fprintf(f, "DH_COORDS     ");
-  }
 #endif
   if (config.what_to_count_2 & COUNT_SAMPLING_RATE) fprintf(f, "SAMPLING_RATE ");
 #if defined ENABLE_IPV6

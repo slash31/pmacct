@@ -885,13 +885,13 @@ int main(int argc,char **argv)
           count_token_int[count_index] = COUNT_INT_SRC_HOST_COORDS;
           what_to_count_2 |= COUNT_SRC_HOST_COORDS;
         }
-        else if (!strcmp(count_token[count_index], "dst_host_lat")) {
-          count_token_int[count_index] = COUNT_INT_DST_HOST_COORDS;
-          what_to_count_2 |= COUNT_DST_HOST_COORDS;
-        }
         else if (!strcmp(count_token[count_index], "src_host_lon")) {
           count_token_int[count_index] = COUNT_INT_SRC_HOST_COORDS;
           what_to_count_2 |= COUNT_SRC_HOST_COORDS;
+        }
+        else if (!strcmp(count_token[count_index], "dst_host_lat")) {
+          count_token_int[count_index] = COUNT_INT_DST_HOST_COORDS;
+          what_to_count_2 |= COUNT_DST_HOST_COORDS;
         }
         else if (!strcmp(count_token[count_index], "dst_host_lon")) {
           count_token_int[count_index] = COUNT_INT_DST_HOST_COORDS;
